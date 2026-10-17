@@ -554,9 +554,14 @@ async function spawnNextOccurrence(t) {
 function sendWhatsApp(t) {
   const who = t.assignee;
   if (!who?.phone) return;
-  const dateStr = t.due_date ? ` para el ${new Date(t.due_date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}` : '';
-  const text = `👋 Hola ${who.name}, tienes una tarea en *${cfg.APP_NAME}*: *${t.title}*${dateStr}. Mírala aquí: ${APP_URL}`;
-  window.open(`https://wa.me/${who.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+  const url = waLink(who, t.title, t.due_date);
+  window.open(url, '_blank');
+}
+
+function waLink(who, title, dueDate) {
+  const dateStr = dueDate ? ` para el ${new Date(dueDate + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}` : '';
+  const text = `👋 Hola ${who.name}, tienes una tarea en *${cfg.APP_NAME}*: *${title}*${dateStr}. Mírala aquí: ${APP_URL}`;
+  return `https://wa.me/${who.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`;
 }
 
 /* ============================ NUEVA TAREA ============================ */
@@ -564,12 +569,14 @@ async function createTask(e) {
   e.preventDefault();
   const assignee = $('tf-assignee').value;
   if (!assignee) return alert('Elige a quién se asigna la tarea.');
+  const title = $('tf-title').value.trim();
+  const dueDate = $('tf-date').value || null;
   const { error } = await sb.from('tasks').insert({
-    title: $('tf-title').value.trim(),
+    title,
     description: $('tf-desc').value.trim() || null,
     assigned_to: assignee,
     category_id: $('tf-category').value || null,
-    due_date: $('tf-date').value || null,
+    due_date: dueDate,
     due_time: $('tf-time').value || null,
     priority: $('tf-priority').value,
     recurrence: $('tf-recurrence').value,
@@ -578,11 +585,17 @@ async function createTask(e) {
   });
   if (error) return alert('Error: ' + error.message);
 
-  // Aviso inmediato al asignado
+  // Aviso inmediato al asignado (push)
   await callFunction('notify-task', {
     userId: assignee,
-    message: `📋 Nueva tarea para ti: ${$('tf-title').value.trim()}`
+    message: `📋 Nueva tarea para ti: ${title}`
   }).catch(() => {});
+
+  // Y WhatsApp con el mensaje listo (si tiene móvil y no te la asignas a ti)
+  const who = state.profiles.find(p => p.id === assignee);
+  if (who?.phone && assignee !== state.user.id) {
+    window.open(waLink(who, title, dueDate), '_blank');
+  }
 
   $('task-form').reset();
   switchTab('tareas');
