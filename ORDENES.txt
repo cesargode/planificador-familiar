@@ -40,6 +40,9 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
       tarea (opcional) y la función send-reminders avisa 1 hora antes.
       ⚠ El frontend (public/) está actualizado en LOCAL pero PUBLICARLO
       en Pages sigue pendiente (subir la carpeta public/ otra vez).
+  · PASO 3 HECHO (17/10): en el detalle de tarea hay ✏️ Editar (título,
+      detalles, quién, categoría, fecha, hora, prioridad, repetición) y
+      🗑 Borrar (con confirmación). Verificado con navegador automatizado.
   · PUSH VERIFICADO de extremo a extremo el 17/10: el navegador de César se
     suscribió, notify-task devolvió {"sent":1} y la notificación LE LLEGÓ.
       ⚠ NO BORRAR la fila de push_subscriptions (es la suscripción real
@@ -48,9 +51,10 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
   · FALTA (PASO 1d): añadir la URL de Pages en Supabase Dashboard →
     Authentication → URL Configuration (Site URL y Redirect URLs) — lo hace
     el usuario, mi token no llega a esa configuración.
-  · FALTA: redesplegar public/ en Cloudflare Pages (el campo "hora" y sus
-    textos todavía solo están en local). Subir la carpeta public/ al
-    dashboard de Pages y recargar la app en cada dispositivo.
+  · FALTA: redesplegar public/ en Cloudflare Pages (el campo "hora",
+    EDITAR y BORRAR tareas y sus textos todavía solo están en local).
+    Subir la carpeta public/ al dashboard de Pages y recargar la app en
+    cada dispositivo.
 
 ────────────────────────────────────────────────────────────────────────────
  ACCESOS Y DATOS NECESARIOS
@@ -117,13 +121,21 @@ PASO 2 — ARREGLAR AVISOS DE LA APP  ✔ HECHO el 17/10/2026
     Upload assets → arrastrar public/ → Deploy. Sin esto, la familia no ve
     el campo "hora" (solo está en local).
 
-PASO 3 — EDITAR Y BORRAR TAREAS
-  Ahora solo se pueden aceptar/rechazar/marcar hecha. Falta:
-    · Editar tarea (título, descripción, fecha, prioridad, asignado).
-    · Borrar tarea.
-  Cómo: añadir botones en openTaskModal() de public/app.js y usar
-  sb.from('tasks').update(...) / .delete(...) (ya permitido por RLS).
-  Probar con el navegador automatizado (ver "CÓMO PROBAR" más abajo).
+PASO 3 — EDITAR Y BORRAR TAREAS   ✔ HECHO el 17/10/2026
+  Hecho (solo en local; falta subir a Pages → FALTA 2c):
+    · En el detalle de tarea ahora hay dos botones nuevos, visibles siempre:
+        ✏️ Editar  → openEditForm() en public/app.js: formulario con título,
+          detalles, asignado, categoría, fecha, hora, prioridad y repetición;
+          Cancelar vuelve al detalle. Si cambia el asignado, aviso push al
+          nuevo asignado (notify-task).
+        🗑 Borrar  → confirm() y sb.from('tasks').delete() (reminder_log se
+          borra solo por cascade); aviso al creador si no eres tú.
+    · RLS ya lo permitía, no ha hecho falta tocar la base de datos.
+    · E2E con navegador automatizado: crear tarea → modal (botones
+      accept/decline/wa/done/edit/del) → editar (título + prioridad + fecha
+      + hora) → guardar → cancelar → borrar → comprobado que la tarea real
+      "planchar" sigue intacta y la de prueba ya no existe.
+  FALTA 2c (subir public/ a Pages).
 
 PASO 4 — CATEGORÍAS A MEDIDA
   Solo hay las6 del schema (Casa, Compras, Escuela, Salud, Mascotas, Otro).
@@ -214,6 +226,9 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
   17/10/2026 — PASO 2 HECHO: regla "due_soon_1h" desplegada, constraint de
     reminder_log ampliado, campo "hora" en el formulario (solo en local;
     falta subir public/ a Pages → FALTA 2c).
+  17/10/2026 — César recibió 2 avisos push de prueba (recordatorio de 1 hora
+    y tarea nueva). Las tareas de prueba se borraron por SQL; la real es
+    "planchar". push_subscriptions sigue con SU fila (1) — no tocar.
   17/10/2026 — La API de gestión de Supabase
     (POST /v1/projects/.../database/query) devuelve SOLO el resultado de la
     ÚLTIMA sentencia del script: si mandas varias, las anteriores no se ven
@@ -224,9 +239,9 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
     la orden que estás ejecutando, la shell se mata a sí misma y la herramienta
     se queda colgada sin salida. Usa un patrón que no se haga match, p. ej.
     `pkill -f "[g]eckodriver"`.
-  17/10/2026 — César recibió 2 avisos push de prueba (recordatorio de 1 hora
-    y tarea nueva). Las tareas de prueba se borraron por SQL; la real es
-    "planchar". push_subscriptions sigue con SU fila (1) — no tocar.
+  17/10/2026 — PASO 3 HECHO: editar/borrar tareas en el modal de detalle
+    (openEditForm + acción 'del'), E2E verde con la tarea real intacta.
+    Igual que el campo de hora: queda POR PUBLICAR en Pages (FALTA 2c).
 
   AVISO: el servidor local (python3 serve.py) NO se reinicia solo al
   reiniciar la PC. Si la app no abre, arráncalo a mano (comando de arriba).

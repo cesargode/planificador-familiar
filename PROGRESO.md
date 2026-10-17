@@ -190,3 +190,21 @@ curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-remin
   recarga → la tarea aparece «17 oct 12:10». Datos de prueba borrados.
 - **Pendiente**: subir `public/` a Cloudflare Pages (el campo de hora y sus
   textos solo existen en local) — FALTA 2c en `ORDENES.txt`.
+
+## ✅ 17 oct 2026 — PASO 3: editar y borrar tareas
+
+- En el **detalle de tarea** (modal) hay ahora dos botones nuevos, visibles
+  para cualquier miembro (la RLS ya lo permitía):
+  - **✏️ Editar** → `openEditForm()` en `public/app.js`: formulario con
+    título, detalles, asignado, categoría, fecha, **hora**, prioridad y
+    repetición. *Cancelar* vuelve al detalle. Si cambia el asignado, aviso
+    push al nuevo asignado vía `notify-task`.
+  - **🗑 Borrar** → `confirm()` + `delete()`. `reminder_log` desaparece solo
+    (cascade) y se avisa al creador si no eres tú.
+- **E2E con navegador automatizado** (Firefox headless, `http://127.0.0.1:8081`):
+  crear tarea → abrir modal (botones `accept/decline/wa/done/edit/del`) →
+  editar título/prioridad/fecha/hora → guardar → cancelar → borrar.
+  Comprobado al final que la tarea real **`planchar` sigue intacta** y la de
+  prueba ya no existe.
+- Al igual que el campo de hora, **esto solo está en local**: hay que volver
+  a subir `public/` a Cloudflare Pages (FALTA 2c en `ORDENES.txt`).

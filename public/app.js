@@ -370,6 +370,10 @@ function openTaskModal(t) {
   const doneBtn = t.status !== 'done' && t.status !== 'declined' && !actions.includes('data-act="done"')
     ? `<button class="btn btn-outline" data-act="done">Marcar hecha</button>` : '';
 
+  const editBtn = `<button class="btn btn-outline" data-act="edit">✏️ Editar</button>`;
+  const delBtn = `<button class="btn btn-danger" data-act="del">🗑 Borrar</button>`;
+  const extra = `${waBtn}${doneBtn}${editBtn}${delBtn}`;
+
   c.innerHTML = `
     <h2>${esc(t.title)}</h2>
     ${t.description ? `<p>${esc(t.description)}</p>` : ''}
@@ -381,7 +385,7 @@ function openTaskModal(t) {
       ${t.due_date ? `<span>📆 ${t.due_date}${t.due_time ? ' ' + t.due_time.slice(0, 5) : ''}</span>` : ''}
       ${t.recurrence !== 'none' ? `<span>${esc({ daily: '🔁 Diaria', weekdays: '🔁 Días laborables', weekly: '🔁 Semanal', monthly: '🔁 Mensual' }[t.recurrence])}</span>` : ''}
     </div>
-    ${actions ? `<div class="modal-actions">${actions}${waBtn}${doneBtn}</div>` : `<div class="modal-actions">${waBtn}${doneBtn}</div>`}`;
+    <div class="modal-actions">${actions || ''}${extra}</div>`;
 
   c.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => taskAction(b.dataset.act, t)));
   $('modal').classList.remove('hidden');
@@ -403,10 +407,84 @@ async function taskAction(act, t) {
   } else if (act === 'wa') {
     sendWhatsApp(t);
     return;
+  } else if (act === 'edit') {
+    openEditForm(t);
+    return;
+  } else if (act === 'del') {
+    if (!confirm(`¿Borrar la tarea «${t.title}»?\nNo se puede deshacer.`)) return;
+    const { error } = await sb.from('tasks').delete().eq('id', t.id);
+    if (error) return alert('Error: ' + error.message);
+    await notifyAssignedToCreator(t, '🗑 ha borrado la tarea');
+    $('modal').classList.add('hidden');
+    await loadAll();
+    render();
+    return;
   }
   $('modal').classList.add('hidden');
   await loadAll();
   render();
+}
+
+/* ============================ EDITAR TAREA ============================ */
+function openEditForm(t) {
+  const c = $('modal-content');
+  const opt = (v, sel, label) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${label}</option>`;
+  const profOpts = state.profiles.map((p) => opt(p.id, t.assigned_to, esc(p.name))).join('');
+  const catOpts = `<option value="">📌 Sin categoría</option>` +
+    state.categories.map((x) => opt(x.id, t.category_id, `${x.icon} ${esc(x.name)}`)).join('');
+  const prioLabel = { baja: '🟡 Prioridad baja', normal: '🟠 Prioridad normal', alta: '🔴 Prioridad alta' };
+  const prioOpts = Object.keys(prioLabel).map((p) => opt(p, t.priority, prioLabel[p])).join('');
+  const recLabel = { none: 'Sin repetición', daily: 'Todos los días', weekdays: 'Días laborables (L-V)', weekly: 'Cada semana', monthly: 'Cada mes' };
+  const recOpts = Object.keys(recLabel).map((r) => opt(r, t.recurrence, recLabel[r])).join('');
+
+  c.innerHTML = `
+    <h2>✏️ Editar tarea</h2>
+    <form id="edit-form">
+      <input type="text" id="ef-title" maxlength="80" required value="${esc(t.title)}" />
+      <textarea id="ef-desc" maxlength="300" placeholder="Detalles (opcional)">${esc(t.description || '')}</textarea>
+      <div class="form-row">
+        <select id="ef-assignee">${profOpts}</select>
+        <select id="ef-category">${catOpts}</select>
+      </div>
+      <div class="form-row">
+        <input type="date" id="ef-date" value="${t.due_date || ''}" />
+        <input type="time" id="ef-time" value="${t.due_time ? t.due_time.slice(0, 5) : ''}" />
+      </div>
+      <select id="ef-priority">${prioOpts}</select>
+      <select id="ef-recurrence">${recOpts}</select>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-outline" id="ef-cancel">Cancelar</button>
+      </div>
+    </form>`;
+
+  $('ef-cancel').addEventListener('click', () => openTaskModal(t));
+  $('edit-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const assignee = $('ef-assignee').value;
+    const changes = {
+      title: $('ef-title').value.trim(),
+      description: $('ef-desc').value.trim() || null,
+      assigned_to: assignee || null,
+      category_id: $('ef-category').value || null,
+      due_date: $('ef-date').value || null,
+      due_time: $('ef-time').value || null,
+      priority: $('ef-priority').value,
+      recurrence: $('ef-recurrence').value
+    };
+    const { error } = await sb.from('tasks').update(changes).eq('id', t.id);
+    if (error) return alert('Error: ' + error.message);
+
+    if (assignee && assignee !== t.assigned_to) {
+      await callFunction('notify-task', {
+        userId: assignee,
+        message: `✏️ ${state.profile.name} te ha asignado la tarea editada: ${changes.title}`
+      }).catch(() => {});
+    }
+    $('modal').classList.add('hidden');
+    await loadAll();
+    render();
+  });
 }
 
 async function callFunction(name, body) {
