@@ -345,3 +345,10 @@ PASO 7 — CAMBIAR LA FAMILIA A LA URL DE GITHUB  (ahora mismo)
     usuario temporal: INSERT en profiles OK, email auto-rellenado,
     intento de poner is_admin=true → 400 "Solo el sistema...", usuario
     de prueba borrado. Copia del SQL en supabase/schema.sql.
+  17/10/2026 — Al CREAR una tarea ahora se abre WhatsApp con el mensaje
+    listo para el asignado (si tiene móvil y no te la asignas a ti), además
+    del push automático de siempre. Botón "Avisar por WhatsApp" del detalle
+    sigue ahí (reutiliza waLink()). Publicado en GitHub Pages.
+    Nota: WhatsApp NO puede enviarse solo de forma automática (requiere la
+    API oficial de Meta, de pago); lo que hace la app es abrir el chat con
+    el texto redactado y que quien crea pulse enviar.
