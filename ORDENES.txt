@@ -19,9 +19,19 @@ CÓMO USAR ESTE ARCHIVO
 La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
 
   · App (PWA) en /home/cesar/app-planificador-familiar/public
-  · ★ PUBLICADA:  https://86bd2a2e.familia-planificador.pages.dev  (Cloudflare Pages)
-      Se actualiza subiendo la carpeta public/ otra vez al dashboard
-      (o conectando el repo git, pendiente de decidir).
+  · ★ PUBLICADA (URL ÚNICA QUE USA LA FAMILIA):
+        https://familia-planificador.pages.dev   (Cloudflare Pages)
+      Desplegada la versión con campo "hora" y editar/borrar el 17/10.
+      ⚠ Cada despliegue genera además su propia URL con hash
+      (https://86bd2a2e.…, https://294c26b3.…, …) que queda CONGELADA con
+      esa versión para siempre: NO dar esas URLs a nadie, la familia se
+      quedaría con la app vieja (así ha pasado con 86bd2a2e…).
+      Para redesplegar: dashboard (Workers & Pages → familia-planificador
+      → Deployments → Create deployment → Upload assets → carpeta public/)
+      o desde aquí:  npx wrangler pages deploy public/
+                     --project-name=familia-planificador --branch=main
+      (wrangler ya está logueado; OJO: sin --branch=main crea un PREVIEW,
+      porque la rama local es "master" y la de producción es "main").
   · Servidor local (para desarrollar):  python3 serve.py → http://192.168.0.44:8081
   · Backend: Supabase (proyecto qvldxrsloszuuuwojxid), todo desplegado
   · Hay4 cuentas con la misma contraseña "Familia2026":
@@ -50,21 +60,30 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
         "🔔 Activar notificaciones" en Ajustes).
   · FALTA (PASO 1d): añadir la URL de Pages en Supabase Dashboard →
     Authentication → URL Configuration (Site URL y Redirect URLs) — lo hace
-    el usuario, mi token no llega a esa configuración.
-  · FALTA: redesplegar public/ en Cloudflare Pages (el campo "hora",
-    EDITAR y BORRAR tareas y sus textos todavía solo están en local).
-    Subir la carpeta public/ al dashboard de Pages y recargar la app en
-    cada dispositivo.
+    el usuario, mi token no llega a esa configuración. Usar SIEMPRE
+    https://familia-planificador.pages.dev (nunca la URL con hash).
+  · PUBLICADO el 17/10: la versión con campo "hora" y editar/borrar tareas
+    está ya en producción (comprobado por diff: producción == public/).
+  · OJO al cambiar de URL: quien haya activado las notificaciones o "instalado"
+    la app desde la URL con hash (86bd2a2e…) debe abrir
+    https://familia-planificador.pages.dev y volver a pulsar
+    "🔔 Activar notificaciones": permiso, service worker e icono instalado
+    son de cada origen.
 
 ────────────────────────────────────────────────────────────────────────────
  ACCESOS Y DATOS NECESARIOS
 ────────────────────────────────────────────────────────────────────────────
-  · App PUBLICADA (la que usa la familia): https://86bd2a2e.familia-planificador.pages.dev
+  · App PUBLICADA (la que usa la familia): https://familia-planificador.pages.dev
   · App en local:        http://192.168.0.44:8081   (misma WiFi que la PC)
   · IP Tailscale de la PC: http://100.73.85.125:8081
   · Cloudflare: la cuenta es del usuario (Pages, proyecto "familia-planificador");
       para redesplegar: dashboard → Workers & Pages → familia-planificador →
-      Create deployment → Upload assets → arrastrar public/ → Deploy.
+      Deployments → Create deployment → Upload assets → arrastrar public/ →
+      Deploy site   (en un dashboard traducido: "Despliegues" →
+      "Crear despliegue" → "Subir recursos" → "Desplegar sitio").
+      O desde aquí (wrangler ya está logueado, sin token):
+         npx wrangler pages deploy public/ --project-name=familia-planificador --branch=main
+      (sin --branch=main solo crea un PREVIEW: la rama local es "master").
   · Proyecto Supabase:   qvldxrsloszuuuwojxid
      URL:      https://qvldxrsloszuuuwojxid.supabase.co
      Dashboard: https://supabase.com/dashboard/project/qvldxrsloszuuuwojxid
@@ -87,14 +106,14 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
 
 PASO 1 — HOSTING CON HTTPS  ✔ HECHO el 17/10/2026 (falta solo 1d)
   Hecho: Cloudflare Pages con la carpeta public/, URL:
-      https://86bd2a2e.familia-planificador.pages.dev
+      https://familia-planificador.pages.dev
     · Verificado por el navegador: HTTPS seguro, service worker controlando
       la página, APIs de push disponibles.
     · El usuario activó las notificaciones en su Firefox y LE LLEGÓ una
       notificación de prueba (notify-task → {"sent":1}).
   FALTA 1d (lo hace el usuario en el Dashboard): Supabase → Authentication →
-    URL Configuration → Site URL https://86bd2a2e.familia-planificador.pages.dev
-    y Redirect URLs https://86bd2a2e.familia-planificador.pages.dev/*
+    URL Configuration → Site URL https://familia-planificador.pages.dev
+    y Redirect URLs https://familia-planificador.pages.dev/*
     (mientras tanto, el enlace mágico redirige a la IP local; el login con
     contraseña NO depende de esto y funciona ya).
   PENDIENTE (prueba en el móvil, PASO 5): abrir la URL en el móvil, entrar y
@@ -116,13 +135,13 @@ PASO 2 — ARREGLAR AVISOS DE LA APP  ✔ HECHO el 17/10/2026
       siguiente y el push llegó al navegador de César → tarea de prueba
       borrada (solo queda "planchar"). E2E de navegador: el campo de hora
       crea y muestra la tarea con su hora.
-  FALTA 2c — REDESPLEGAR public/ en Cloudflare Pages (lo hace el usuario):
-    dashboard → Workers & Pages → familia-planificador → Create deployment →
-    Upload assets → arrastrar public/ → Deploy. Sin esto, la familia no ve
-    el campo "hora" (solo está en local).
+  PUBLICADO 2c ✔ el 17/10: subido a Pages (desde el dashboard por el usuario
+    y verificado por diff: producción == public/). OJO: la familia tenía la
+    URL con hash 86bd2a2e… (congelada con la versión vieja); usar desde ahora
+    https://familia-planificador.pages.dev
 
 PASO 3 — EDITAR Y BORRAR TAREAS   ✔ HECHO el 17/10/2026
-  Hecho (solo en local; falta subir a Pages → FALTA 2c):
+  Hecho y PUBLICADO en Pages el 17/10:
     · En el detalle de tarea ahora hay dos botones nuevos, visibles siempre:
         ✏️ Editar  → openEditForm() en public/app.js: formulario con título,
           detalles, asignado, categoría, fecha, hora, prioridad y repetición;
@@ -135,7 +154,7 @@ PASO 3 — EDITAR Y BORRAR TAREAS   ✔ HECHO el 17/10/2026
       accept/decline/wa/done/edit/del) → editar (título + prioridad + fecha
       + hora) → guardar → cancelar → borrar → comprobado que la tarea real
       "planchar" sigue intacta y la de prueba ya no existe.
-  FALTA 2c (subir public/ a Pages).
+  Publicado en Pages el 17/10 (producción == local).
 
 PASO 4 — CATEGORÍAS A MEDIDA
   Solo hay las6 del schema (Casa, Compras, Escuela, Salud, Mascotas, Otro).
@@ -212,7 +231,7 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
   17/10/2026 — git init y primer commit. Quitada la clave privada VAPID del
     README (está en los secretos de Supabase).
   17/10/2026 — PASO 1 HECHO: publicada en Cloudflare Pages
-    (https://86bd2a2e.familia-planificador.pages.dev), servida con
+    (https://familia-planificador.pages.dev), servida con
     Cache-Control must-revalidate (no-cache) igual que en local.
   17/10/2026 — Push de extremo a extremo VERIFICADO en el navegador real de
     César: suscripción en push_subscriptions + notify-task {"sent":1} +
@@ -224,8 +243,8 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
     push_subscriptions; el usuario tuvo que reactivar. NO tocar esa fila.
 
   17/10/2026 — PASO 2 HECHO: regla "due_soon_1h" desplegada, constraint de
-    reminder_log ampliado, campo "hora" en el formulario (solo en local;
-    falta subir public/ a Pages → FALTA 2c).
+    reminder_log ampliado, campo "hora" en el formulario. PUBLICADO en
+    Pages el 17/10.
   17/10/2026 — César recibió 2 avisos push de prueba (recordatorio de 1 hora
     y tarea nueva). Las tareas de prueba se borraron por SQL; la real es
     "planchar". push_subscriptions sigue con SU fila (1) — no tocar.
@@ -241,7 +260,21 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
     `pkill -f "[g]eckodriver"`.
   17/10/2026 — PASO 3 HECHO: editar/borrar tareas en el modal de detalle
     (openEditForm + acción 'del'), E2E verde con la tarea real intacta.
-    Igual que el campo de hora: queda POR PUBLICAR en Pages (FALTA 2c).
+    PUBLICADO en Pages el 17/10.
+
+  17/10/2026 — Cloudflare: la URL con hash (86bd2a2e…) es el ALIAS de un
+    despliegue concreto y queda congelada con esa versión; al subir una nueva
+    esa URL NO cambia. La URL que hay que dar es la de producción
+    https://familia-planificador.pages.dev (comprobado: 86bd2a2e seguía con
+    la app vieja mientras producción ya tenía la nueva).
+  17/10/2026 — wrangler quedó LOGUEADO en esta PC (OAuth, sin token), así
+    que ya se puede redesplegar sin tocar el dashboard:
+      npx wrangler pages deploy public/ --project-name=familia-planificador --branch=main
+    OJO: sin --branch=main crea un despliegue de PREVIEW, porque la rama
+    local de git es "master" y la de producción del proyecto es "main".
+  17/10/2026 — En un dashboard de Cloudflare traducido por el navegador:
+    "Deployments"→"Despliegues", "Create deployment"→"Crear despliegue",
+    "Upload assets"→"Subir recursos", "Deploy site"→"Desplegar sitio".
 
   AVISO: el servidor local (python3 serve.py) NO se reinicia solo al
   reiniciar la PC. Si la app no abre, arráncalo a mano (comando de arriba).

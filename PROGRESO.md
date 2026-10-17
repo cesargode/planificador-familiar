@@ -147,7 +147,7 @@ curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-remin
 ## 🚀 17 oct 2026 — PASO 1: publicación en HTTPS + push verificado
 
 - **Cloudflare Pages** subiendo la carpeta `public/` (sin build, sin git).
-  URL pública: **https://86bd2a2e.familia-planificador.pages.dev**
+  URL pública: **https://familia-planificador.pages.dev**
   Servida con `cache-control: public, max-age=0, must-revalidate`
   (igual que el `serve.py` local, así que la PWA se actualiza sola).
 - Verificado con navegador automatizado contra la URL pública:
@@ -208,3 +208,24 @@ curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-remin
   prueba ya no existe.
 - Al igual que el campo de hora, **esto solo está en local**: hay que volver
   a subir `public/` a Cloudflare Pages (FALTA 2c en `ORDENES.txt`).
+
+## 🌐 17 oct 2026 — Publicación en Pages (PASO 2 y 3 ya en producción)
+
+- **URL definitiva: https://familia-planificador.pages.dev** (producción).
+  Verificado por diff fichero a fichero: **producción == `public/` local**
+  (campo `#tf-time`, `openEditForm`, botones editar/borrar incluidos).
+- ⚠ **Las URL con hash congelan el despliegue**: `86bd2a2e.familia-planificador.pages.dev`
+  (la que tenía dada la familia) sigue sirviendo la versión **vieja** y no
+  va a cambiar nunca. Cada despliegue nuevo genera su propio hash
+  (`294c26b3…`, `bc4a67bb…`, …). **Solo hay que dar la de producción.**
+- **wrangler quedó logueado** (OAuth con la cuenta del usuario) → ya no hace
+  falta el dashboard para publicar:
+  `npx wrangler pages deploy public/ --project-name=familia-planificador --branch=main`
+  (sin `--branch=main` crea un *preview*, porque la rama local es `master` y
+  la de producción es `main`).
+- Etiquetas del dashboard en español (traducido por el navegador):
+  *Deployments*→Despliegues, *Create deployment*→Crear despliegue,
+  *Upload assets*→Subir recursos, *Deploy site*→Desplegar sitio.
+- **Pendiente**: quien haya activado notificaciones o instalado la app desde
+  la URL con hash debe abrir la de producción y volver a pulsar
+  «🔔 Activar notificaciones» (permiso y service worker son de cada origen).
