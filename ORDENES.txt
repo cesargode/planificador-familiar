@@ -352,3 +352,10 @@ PASO 7 — CAMBIAR LA FAMILIA A LA URL DE GITHUB  (ahora mismo)
     Nota: WhatsApp NO puede enviarse solo de forma automática (requiere la
     API oficial de Meta, de pago); lo que hace la app es abrir el chat con
     el texto redactado y que quien crea pulse enviar.
+  17/10/2026 — MEJORAS DE INTERFAZ: (1) calendario con vista MES/SEMANA
+    (seg en los controles; la semanal muestra chips con el título y ‹ ›
+    navega por semanas; si el día elegido no está en la semana, auto-
+    selecciona hoy); (2) fondo más oscuro (--bg #dde2ea); (3) categorías
+    cambiadas en la BD a Casa/Habitación/Baños/Comedor/Cocina (borradas
+    Compras, Escuela, Salud, Mascotas, Otro; las 2 tareas existentes eran
+    de Casa y no se tocaron). SW a familia-v6.
