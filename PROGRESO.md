@@ -135,9 +135,34 @@ curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-remin
   `PUT /auth/v1/admin/users/{id}` con service role → `{"password":"..."}`.
 - El cron se programó con SQL (`pg_cron` + `pg_net`), así que **no hay que tocar
   el Dashboard** para los recordatorios.
-- No hay git en el proyecto todavía (`git init` pendiente si se quiere versionar).
+- El proyecto **ya tiene git** (`git init` hecho, varios commits). Falta
+  decidir si se sube a GitHub (PASO 6) y si se conecta Cloudflare Pages al
+  repo para desplegar con `git push`.
 - `supabase` CLI **sí instalado** (v2.121.0). El token debe pegarlo el usuario cada
   sesión (https://supabase.com/dashboard/account/tokens, con **todos los permisos**)
   y usarlo como variable de entorno: `export SUPABASE_ACCESS_TOKEN=...`
   — **nunca** guardarlo en ficheros ni en el historial.
 - El usuario trabaja en español: responder siempre en español.
+
+## 🚀 17 oct 2026 — PASO 1: publicación en HTTPS + push verificado
+
+- **Cloudflare Pages** subiendo la carpeta `public/` (sin build, sin git).
+  URL pública: **https://86bd2a2e.familia-planificador.pages.dev**
+  Servida con `cache-control: public, max-age=0, must-revalidate`
+  (igual que el `serve.py` local, así que la PWA se actualiza sola).
+- Verificado con navegador automatizado contra la URL pública:
+  `window.isSecureContext`, service worker controlando la página,
+  APIs de `serviceWorker`/`PushManager`/`Notification` disponibles,
+  login con contraseña y calendario cargando.
+- **Push de extremo a extremo con el navegador real de César**: suscripción
+  guardada en `push_subscriptions` (endpoint de Mozilla) y `notify-task`
+  respondió `{"sent":1}` → le llegó la notificación de prueba.
+- Limitación aprendida: en **Firefox headless no se puede automatizar el
+  permiso** de notificaciones (el prompt no se resuelve; el pref
+  `permissions.default.notification` ya no existe en Firefox 157). La prueba
+  final del permiso la tiene que hacer el usuario en su navegador.
+- Ojo: una limpieza de pruebas borró sin querer la fila de
+  `push_subscriptions` y el usuario tuvo que reactivar. **No borrar esa fila.**
+- Pendiente del PASO 1: el usuario debe añadir la URL de Pages en Supabase →
+  Authentication → URL Configuration (Site URL + Redirect URLs), porque el
+  token de gestión no llega a esa configuración (404 en `/v1/projects/.../config`).
