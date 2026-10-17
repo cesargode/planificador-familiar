@@ -102,12 +102,13 @@
         </div>
         <div class="form-row">
           <input type="date" id="tf-date" />
-          <select id="tf-priority">
-            <option value="baja">🟡 Prioridad baja</option>
-            <option value="normal" selected>🟠 Prioridad normal</option>
-            <option value="alta">🔴 Prioridad alta</option>
-          </select>
+          <input type="time" id="tf-time" title="Hora de vencimiento (opcional)" />
         </div>
+        <select id="tf-priority">
+          <option value="baja">🟡 Prioridad baja</option>
+          <option value="normal" selected>🟠 Prioridad normal</option>
+          <option value="alta">🔴 Prioridad alta</option>
+        </select>
         <select id="tf-recurrence">
           <option value="none">Sin repetición</option>
           <option value="daily">Todos los días</option>
@@ -115,6 +116,7 @@
           <option value="weekly">Cada semana</option>
           <option value="monthly">Cada mes</option>
         </select>
+        <p class="hint">La hora es opcional: si la pones, quien tenga la tarea recibirá un aviso 1 hora antes.</p>
         <button type="submit" class="btn btn-primary">Asignar tarea</button>
       </form>
     </main>

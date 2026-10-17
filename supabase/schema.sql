@@ -70,10 +70,15 @@ create table if not exists public.push_subscriptions (
 -- ------------------------------------------------------------
 create table if not exists public.reminder_log (
   task_id uuid not null references public.tasks(id) on delete cascade,
-  kind text not null check (kind in ('due_soon','pending_24h')),
+  kind text not null check (kind in ('due_soon','due_soon_1h','pending_24h')),
   sent_at timestamptz not null default now(),
   primary key (task_id, kind)
 );
+
+-- Actualización de una base de datos ya creada (amplía los kinds de aviso):
+--   alter table public.reminder_log drop constraint reminder_log_kind_check;
+--   alter table public.reminder_log add constraint reminder_log_kind_check
+--     check (kind in ('due_soon','due_soon_1h','pending_24h'));
 
 -- ------------------------------------------------------------
 --  RLS: todos los miembros son iguales (familia de confianza)

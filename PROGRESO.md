@@ -166,3 +166,27 @@ curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-remin
 - Pendiente del PASO 1: el usuario debe añadir la URL de Pages en Supabase →
   Authentication → URL Configuration (Site URL + Redirect URLs), porque el
   token de gestión no llega a esa configuración (404 en `/v1/projects/.../config`).
+
+## 🚀 17 oct 2026 — PASO 2: recordatorio «1 hora antes del vencimiento»
+
+- **Regla `due_soon_1h`** en `supabase/functions/send-reminders/index.ts`
+  (desplegada): tareas de hoy con `due_time`, estado `pending`/`accepted` y
+  sin aviso previo se notifican en la ventana **[vencimiento − 1 h, vencimiento)**,
+  con mensaje `⏳ En 1 hora: <título> (HH:MM)`.
+- **`reminder_log_kind_check` ampliado** en vivo a
+  `('due_soon','due_soon_1h','pending_24h')` y reflejado en `supabase/schema.sql`
+  (con el bloque de actualización comentado para bases ya creadas).
+- **Campo «hora» opcional** en el formulario de tarea (`#tf-time` en
+  `index.html`, `due_time` en `createTask()` de `app.js`), con pista:
+  «quien tenga la tarea recibirá un aviso 1 hora antes». Sin este campo la
+  regla no habría tenido nunca datos que procesar (antes `due_time` solo se
+  mostraba y propagaba, nunca se rellenaba).
+- **Verificación de punta a punta** con el cron real: tarea de prueba con
+  hora a +30 min → `reminder_log` con `kind='due_soon_1h'` a los 60 s
+  (job `succeeded`), push recibido por el navegador de César; tarea de prueba
+  borrada después.
+- **E2E de navegador** (Firefox headless contra `http://127.0.0.1:8081`):
+  login con contraseña → pestaña Nueva → campo de tipo `time` → creación →
+  recarga → la tarea aparece «17 oct 12:10». Datos de prueba borrados.
+- **Pendiente**: subir `public/` a Cloudflare Pages (el campo de hora y sus
+  textos solo existen en local) — FALTA 2c en `ORDENES.txt`.

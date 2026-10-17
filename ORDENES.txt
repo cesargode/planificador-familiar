@@ -32,8 +32,14 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
       Los tres últimos deben rellenar nombre/WhatsApp/color la primera vez.
   · César (solo él) tiene panel de administración en Ajustes:
       añadir miembros, cambiarles la contraseña, editar nombre/WhatsApp, borrar.
-  · Recordatorios automáticos ACTIVOS (cron en Supabase, cada minuto).
+  · Recordatorios automáticos ACTIVOS (cron en Supabase, cada minuto):
+      9:00 → "hoy toca", 1 HORA ANTES del vencimiento → "due_soon_1h",
+      y 24h sin aceptar (los tres comprobados el 17/10).
   · Avisos push inmediatos al crear/aceptar/rechazar/completar tareas.
+  · PASO 2 HECHO (17/10): el campo "hora" existe ya en el formulario de
+      tarea (opcional) y la función send-reminders avisa 1 hora antes.
+      ⚠ El frontend (public/) está actualizado en LOCAL pero PUBLICARLO
+      en Pages sigue pendiente (subir la carpeta public/ otra vez).
   · PUSH VERIFICADO de extremo a extremo el 17/10: el navegador de César se
     suscribió, notify-task devolvió {"sent":1} y la notificación LE LLEGÓ.
       ⚠ NO BORRAR la fila de push_subscriptions (es la suscripción real
@@ -42,6 +48,9 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
   · FALTA (PASO 1d): añadir la URL de Pages en Supabase Dashboard →
     Authentication → URL Configuration (Site URL y Redirect URLs) — lo hace
     el usuario, mi token no llega a esa configuración.
+  · FALTA: redesplegar public/ en Cloudflare Pages (el campo "hora" y sus
+    textos todavía solo están en local). Subir la carpeta public/ al
+    dashboard de Pages y recargar la app en cada dispositivo.
 
 ────────────────────────────────────────────────────────────────────────────
  ACCESOS Y DATOS NECESARIOS
@@ -88,14 +97,25 @@ PASO 1 — HOSTING CON HTTPS  ✔ HECHO el 17/10/2026 (falta solo 1d)
     "🔔 Activar notificaciones", y probar "Instalar app / Añadir a pantalla
     de inicio".
 
-PASO 2 — ARREGLAR AVISOS DE LA APP
-  a. En Ajustes se promete un recordatorio "1 hora antes del vencimiento"
-     que NO existe. Opción A (rápida): quitar esa frase en public/index.html.
-     Opción B: implementarlo en supabase/functions/send-reminders/index.ts
-     (regla nueva "due_soon_1h": tarea con due_time y hoy, avisar1 hora
-     antes; añadir 'due_soon_1h' al check de kind en public... en
-     supabase/schema.sql → tabla reminder_log) y redesplegar la función.
-  b. Mientras tanto, en public/styles.css / index.html revisar textos.
+PASO 2 — ARREGLAR AVISOS DE LA APP  ✔ HECHO el 17/10/2026
+  Hecho (opción B, la completa):
+    · Regla nueva "due_soon_1h" en supabase/functions/send-reminders/index.ts:
+      tarea de HOY con hora, pendiente o aceptada → push en la ventana
+      [vencimiento − 1 h, vencimiento). FUNCIÓN YA DESPLEGADA.
+    · 'due_soon_1h' añadido al check de kind de reminder_log (hecho con SQL
+      en vivo y reflejado en supabase/schema.sql).
+    · Campo "hora" OPCIONAL en el formulario de tarea: #tf-time en
+      public/index.html + due_time en createTask() (public/app.js).
+    · Texto de Ajustes (index.html:127) ahora sí es verdad: 9:00 y 1 h antes.
+    · COMPROBADO de punta a punta con el cron real: tarea de prueba con hora
+      a +30 min → el job escribió reminder_log(kind='due_soon_1h') al minuto
+      siguiente y el push llegó al navegador de César → tarea de prueba
+      borrada (solo queda "planchar"). E2E de navegador: el campo de hora
+      crea y muestra la tarea con su hora.
+  FALTA 2c — REDESPLEGAR public/ en Cloudflare Pages (lo hace el usuario):
+    dashboard → Workers & Pages → familia-planificador → Create deployment →
+    Upload assets → arrastrar public/ → Deploy. Sin esto, la familia no ve
+    el campo "hora" (solo está en local).
 
 PASO 3 — EDITAR Y BORRAR TAREAS
   Ahora solo se pueden aceptar/rechazar/marcar hecha. Falta:
@@ -190,6 +210,23 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
     la hace el usuario en su navegador.
   17/10/2026 — OJO: durante las pruebas se borró sin querer la fila de
     push_subscriptions; el usuario tuvo que reactivar. NO tocar esa fila.
+
+  17/10/2026 — PASO 2 HECHO: regla "due_soon_1h" desplegada, constraint de
+    reminder_log ampliado, campo "hora" en el formulario (solo en local;
+    falta subir public/ a Pages → FALTA 2c).
+  17/10/2026 — La API de gestión de Supabase
+    (POST /v1/projects/.../database/query) devuelve SOLO el resultado de la
+    ÚLTIMA sentencia del script: si mandas varias, las anteriores no se ven
+    (ojo con creer que un DELETE no ha borrado nada).
+  17/10/2026 — geckodriver: POST /session devuelve
+    value = { sessionId, capabilities } (objeto, NO un string).
+  17/10/2026 — OJO con `pkill -f "<texto>"`: si el texto aparece también en
+    la orden que estás ejecutando, la shell se mata a sí misma y la herramienta
+    se queda colgada sin salida. Usa un patrón que no se haga match, p. ej.
+    `pkill -f "[g]eckodriver"`.
+  17/10/2026 — César recibió 2 avisos push de prueba (recordatorio de 1 hora
+    y tarea nueva). Las tareas de prueba se borraron por SQL; la real es
+    "planchar". push_subscriptions sigue con SU fila (1) — no tocar.
 
   AVISO: el servidor local (python3 serve.py) NO se reinicia solo al
   reiniciar la PC. Si la app no abre, arráncalo a mano (comando de arriba).

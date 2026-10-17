@@ -473,6 +473,7 @@ async function createTask(e) {
     assigned_to: assignee,
     category_id: $('tf-category').value || null,
     due_date: $('tf-date').value || null,
+    due_time: $('tf-time').value || null,
     priority: $('tf-priority').value,
     recurrence: $('tf-recurrence').value,
     created_by: state.user.id,
