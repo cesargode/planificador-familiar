@@ -3,6 +3,7 @@
    ============================================================ */
 const cfg = window.APP_CONFIG;
 const sb = supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
+const APP_URL = new URL('./', document.baseURI).href; // raíz real de la app (funciona en subcarpeta)
 
 const state = {
   user: null,
@@ -112,7 +113,7 @@ function wireEvents() {
   $('otp-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = $('otp-email').value.trim();
-    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin } });
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: APP_URL } });
     $('otp-msg').textContent = error
       ? `Error: ${error.message}`
       : '📧 Te he enviado un enlace de acceso. Ábrelo desde el móvil o el PC y entrarás directamente.';
@@ -536,7 +537,7 @@ function sendWhatsApp(t) {
   const who = t.assignee;
   if (!who?.phone) return;
   const dateStr = t.due_date ? ` para el ${new Date(t.due_date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}` : '';
-  const text = `👋 Hola ${who.name}, tienes una tarea en *${cfg.APP_NAME}*: *${t.title}*${dateStr}. Mírala aquí: ${location.origin}`;
+  const text = `👋 Hola ${who.name}, tienes una tarea en *${cfg.APP_NAME}*: *${t.title}*${dateStr}. Mírala aquí: ${APP_URL}`;
   window.open(`https://wa.me/${who.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
 }
 

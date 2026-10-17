@@ -1,7 +1,8 @@
 {
   "name": "Familia — Planificador de tareas",
   "short_name": "Familia",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#1a2b45",
   "theme_color": "#1a2b45",
