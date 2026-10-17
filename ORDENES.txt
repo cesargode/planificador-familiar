@@ -325,3 +325,13 @@ PASO 7 — CAMBIAR LA FAMILIA A LA URL DE GITHUB  (ahora mismo)
     reserva acepta --branch=main igual.
     gh auth: token con scopes gist, read:org, repo, workflow (keyring).
     Git identidad local: cesargode <gesargode2@gmail.com>.
+  17/10/2026 — FIX PWA en subcarpeta (GitHub Pages sirve en
+    /planificador-familiar/, no en la raíz): manifest start_url/scope ahora
+    "./" (antes "/" abría cesargode.github.io vacío al instalar la app);
+    sw.js con rutas relativas y CACHE familia-v5; app.js usa APP_URL
+    (raíz real) para el emailRedirectTo y el enlace de WhatsApp; el SW
+    resuelve "/" de los push a la raíz de la app. COMPROBADO: manifest y
+    assets HTTP 200 en la URL nueva.
+    ⚠ Quien ya haya instalado el icono con la versión vieja: borrar el
+    acceso directo/app del móvil y volver a "Instalar app" desde
+    https://cesargode.github.io/planificador-familiar/
