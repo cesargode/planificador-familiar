@@ -14,7 +14,7 @@ CÓMO USAR ESTE ARCHIVO
      README.md (montaje desde cero), supabase/schema.sql (base de datos).
 
 ────────────────────────────────────────────────────────────────────────────
- ESTADO ACTUAL  (última actualización: 15 oct 2026)
+ ESTADO ACTUAL  (última actualización: 17 oct 2026)
 ────────────────────────────────────────────────────────────────────────────
 La app YA FUNCIONA y la familia YA PUEDE USARLA en la red local.
 
@@ -154,19 +154,19 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
 ────────────────────────────────────────────────────────────────────────────
  NOTAS Y APUNTES  (añadir aquí lo nuevo, con fecha)
 ────────────────────────────────────────────────────────────────────────────
- 15/10/2026 — Se cerró notify-task: ya no acepta la clave pública, exige el
+ 17/10/2026 — Se cerró notify-task: ya no acepta la clave pública, exige el
    JWT de la sesión del usuario (evita que cualquiera mande avisos).
- 15/10/2026 — Cron de recordatorios montado con pg_cron + pg_net (no hace
+ 17/10/2026 — Cron de recordatorios montado con pg_cron + pg_net (no hace
    falta tocar el Dashboard). Job "send-reminders" cada minuto.
- 15/10/2026 — Service Worker cambiado a "red primero, caché de respaldo"
+ 17/10/2026 — Service Worker cambiado a "red primero, caché de respaldo"
    (antes los móviles se quedaban con versiones viejas). Servidor serve.py
    manda Cache-Control: no-cache para que la app se actualice sola.
- 15/10/2026 — Login con contraseña (antes solo enlace mágico, que se rompía
+ 17/10/2026 — Login con contraseña (antes solo enlace mágico, que se rompía
    por la Site URL de Supabase).
- 15/10/2026 — Panel de administración para César (Edge Function manage-users
+ 17/10/2026 — Panel de administración para César (Edge Function manage-users
    + columna profiles.is_admin + trigger que impide que un cliente se asigne
    admin o cambie el email).
- 15/10/2026 — git init y primer commit. Quitada la clave privada VAPID del
+ 17/10/2026 — git init y primer commit. Quitada la clave privada VAPID del
    README (está en los secretos de Supabase).
 
   AVISO: el servidor local (python3 serve.py) NO se reinicia solo al

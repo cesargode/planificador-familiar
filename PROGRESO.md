@@ -1,6 +1,6 @@
 # 📌 Planificador Familiar — Estado y siguientes pasos
 
-> Última actualización: **15 oct 2026**.
+> Última actualización: **17 oct 2026**.
 > **El fichero que manda para continuar es `ORDENES.txt`** (qué hacer ahora,
 > accesos y comandos). Este PROGRESO es el historial de lo ya hecho.
 
