@@ -58,9 +58,8 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
       ⚠ NO BORRAR la fila de push_subscriptions (es la suscripción real
         del PC de César; si se borra, hay que volver a pulsar
         "🔔 Activar notificaciones" en Ajustes).
-  · FALTA (PASO 1d): añadir la URL de Pages en Supabase Dashboard →
-    Authentication → URL Configuration (Site URL y Redirect URLs) — lo hace
-    el usuario, mi token no llega a esa configuración. Usar SIEMPRE
+  · ✔ PASO 1d (17/10): el usuario puso la URL de Pages en Supabase →
+    Authentication → URL Configuration. Usar SIEMPRE
     https://familia-planificador.pages.dev (nunca la URL con hash).
   · PUBLICADO el 17/10: la versión con campo "hora" y editar/borrar tareas
     está ya en producción (comprobado por diff: producción == public/).
@@ -104,18 +103,20 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
  TRABAJO PENDIENTE  (en este orden)
 ────────────────────────────────────────────────────────────────────────────
 
-PASO 1 — HOSTING CON HTTPS  ✔ HECHO el 17/10/2026 (falta solo 1d)
+PASO 1 — HOSTING CON HTTPS  ✔ HECHO el 17/10/2026 (1d también)
   Hecho: Cloudflare Pages con la carpeta public/, URL:
       https://familia-planificador.pages.dev
     · Verificado por el navegador: HTTPS seguro, service worker controlando
       la página, APIs de push disponibles.
     · El usuario activó las notificaciones en su Firefox y LE LLEGÓ una
       notificación de prueba (notify-task → {"sent":1}).
-  FALTA 1d (lo hace el usuario en el Dashboard): Supabase → Authentication →
+  1d ✔ (17/10): el usuario cambió la URL en Supabase → Authentication →
     URL Configuration → Site URL https://familia-planificador.pages.dev
-    y Redirect URLs https://familia-planificador.pages.dev/*
-    (mientras tanto, el enlace mágico redirige a la IP local; el login con
-    contraseña NO depende de esto y funciona ya).
+    y Redirect URLs https://familia-planificador.pages.dev/* (confirmado por
+    él; NO verificable desde aquí: GET /v1/projects/.../config → 404).
+  17/10 — Notificaciones REACTIVADAS en la URL nueva: hay 2 filas en
+    push_subscriptions (la de la URL vieja 86bd2a2e… y la de producción,
+    creada a las 12:14). Prueba de push por el cron a las 12:16 ✔.
   PENDIENTE (prueba en el móvil, PASO 5): abrir la URL en el móvil, entrar y
     "🔔 Activar notificaciones", y probar "Instalar app / Añadir a pantalla
     de inicio".
@@ -161,16 +162,20 @@ PASO 4 — CATEGORÍAS A MEDIDA
   Si la familia quiere más: INSERTAR en public.categories desde el SQL Editor
   o desde el panel de admin (habría que ampliar manage-users).
 
-PASO 5 — PRUEBA REAL CON LA FAMILIA
-  · PRIMERO: probar en el MÓVIL con la URL de Pages (login, activar
-    notificaciones, "instalar app"). Falta.
+PASO 5 — PRUEBA REAL CON LA FAMILIA   (empezado el 17/10)
+  · HECHO en el PC de César con la URL nueva: notificaciones activadas
+    (fila de push_subscriptions de las 12:14) y la app YA SE ESTÁ USANDO:
+    hay una tarea real "Barrer" con hora y su recordatorio "1 hora antes"
+    salió por el cron a las 12:09.
+  · PRIMERO de lo que falta: probar en el MÓVIL con la URL de Pages
+    (login, activar notificaciones, "instalar app"). Falta.
   · Que Isa, Sara y Alex entren y completen su perfil.
   · Que creen y acepten tareas entre ellos.
   · Confirmar que les llegan los avisos push a todos.
   · Apuntar aquí lo que falle.
 
 PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
-  git init ya está hecho y hay3 commits. Para subirlo a GitHub:
+  git init ya está hecho y hay6 commits. Para subirlo a GitHub:
      gh auth login
      gh repo create planificador-familiar --private --source=. --push
 
@@ -275,6 +280,14 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
   17/10/2026 — En un dashboard de Cloudflare traducido por el navegador:
     "Deployments"→"Despliegues", "Create deployment"→"Crear despliegue",
     "Upload assets"→"Subir recursos", "Deploy site"→"Desplegar sitio".
+
+  17/10/2026 — PASO 1d hecho por el usuario y notificaciones reactivadas
+    en la URL de producción (2 filas en push_subscriptions: la de la URL
+    vieja 86bd2a2e… y la nueva de las 12:14). Prueba de push por el cron a
+    las 12:16 con una tarea de prueba (borrada después).
+  17/10/2026 — El PASO 2 funciona YA CON DATOS REALES: la familia creó la
+    tarea "Barrer" con hora y su recordatorio "1 hora antes" salió por el
+    cron a las 12:09 (reminder_log).
 
   AVISO: el servidor local (python3 serve.py) NO se reinicia solo al
   reiniciar la PC. Si la app no abre, arráncalo a mano (comando de arriba).

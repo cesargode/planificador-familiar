@@ -229,3 +229,16 @@ curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-remin
 - **Pendiente**: quien haya activado notificaciones o instalado la app desde
   la URL con hash debe abrir la de producción y volver a pulsar
   «🔔 Activar notificaciones» (permiso y service worker son de cada origen).
+
+## ✅ 17 oct 2026 — PASO 1d + notificaciones en la URL nueva
+
+- **PASO 1d hecho por el usuario**: Site URL y Redirect URLs de Supabase
+  apuntan ya a `https://familia-planificador.pages.dev/*` (no verificable
+  desde la terminal: `GET /v1/projects/.../config` → 404 con el token de gestión).
+- **Notificaciones reactivadas en el origen nuevo**: `push_subscriptions`
+  tiene ahora **2 filas** (la de la URL vieja `86bd2a2e…` y la creada a las
+  12:14 en producción). Prueba de push enviada por el cron a las **12:16**.
+- **La app ya se está usando con datos reales**: apareció la tarea familiar
+  «Barrer» con hora, y su recordatorio *1 hora antes* salió a las **12:09**
+  → el PASO 2 funciona en producción, no solo en la prueba.
+- Tareas de prueba borradas: solo quedan `planchar` y `Barrer`.
