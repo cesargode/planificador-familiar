@@ -198,11 +198,18 @@ function wireEvents() {
       hint.classList.add('hidden');
       return;
     }
+    // Diagnóstico: estado del service worker y del manifest
+    let sw = 'no soportado';
+    if ('serviceWorker' in navigator) {
+      const r = await navigator.serviceWorker.getRegistration();
+      sw = !r ? 'NO registrado' : (r.active ? 'activo' : (r.installing ? 'instalando' : (r.waiting ? 'esperando' : 'sin activar')));
+    }
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    hint.textContent = ios
+    const manual = ios
       ? 'En iPhone/iPad: botón Compartir ↗ en Safari → "Añadir a pantalla de inicio" → Añadir.'
-      : 'En Android: abre esta página con Chrome, pulsa ⋮ (menú) → "Instalar app" o "Añadir a pantalla de inicio". (En el navegador Mi del Xiaomi no existe; usa Chrome.)';
+      : 'En Chrome (Android): pulsa ⋮ arriba → "Instalar aplicación" o "Añadir a pantalla de inicio" → Instalar. Si no lo ves: ⋮ → Configuración → Datos personales del sitio → borra cesargode.github.io y recarga la página.';
+    hint.textContent = `Service worker: ${sw}. ${manual}`;
     hint.classList.remove('hidden');
   });
 }
