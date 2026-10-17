@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a2b45" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Familia</title>
+</head>
+<body>
+  <!-- ========== LOGIN ========== -->
+  <section id="view-login" class="view hidden">
+    <div class="login-card">
+      <div class="login-logo">👨‍👩‍👧‍👦</div>
+      <h1 id="login-title">Familia</h1>
+      <p>Planificador de tareas de la familia</p>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="tu@email.com" required autocomplete="email" />
+        <input type="password" id="login-pass" placeholder="Contraseña" autocomplete="current-password" />
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+      <p id="login-msg" class="login-msg"></p>
+      <details class="paste-link">
+        <summary>¿Prefieres un enlace mágico por correo?</summary>
+        <form id="otp-form">
+          <input type="email" id="otp-email" placeholder="tu@email.com" required autocomplete="email" />
+          <button type="submit" class="btn btn-outline">Enviar enlace de acceso</button>
+        </form>
+        <p id="otp-msg" class="login-msg"></p>
+        <p class="hint">Si el enlace del correo no abre, cópialo y pégalo aquí:</p>
+        <textarea id="login-paste" rows="2" placeholder="https://…#access_token=…"></textarea>
+        <button type="button" id="login-paste-btn" class="btn btn-outline">Entrar con ese enlace</button>
+      </details>
+    </div>
+  </section>
+
+  <!-- ========== ONBOARDING (nombre + móvil) ========== -->
+  <section id="view-onboarding" class="view hidden">
+    <div class="login-card">
+      <div class="login-logo">👋</div>
+      <h1>¡Bienvenido!</h1>
+      <p>Configura tu perfil</p>
+      <form id="onboarding-form">
+        <input type="text" id="ob-name" placeholder="Tu nombre" required maxlength="30" />
+        <input type="tel" id="ob-phone" placeholder="Tu WhatsApp (+34600000000)" pattern="\+[0-9]{8,15}" title="Formato internacional, ej. +34600112233" />
+        <label class="color-label">Tu color</label>
+        <div id="ob-colors" class="color-picker"></div>
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========== APP PRINCIPAL ========== -->
+  <section id="view-app" class="view hidden">
+    <header class="topbar">
+      <h1 id="app-title">📅 Familia</h1>
+      <div class="topbar-actions">
+        <button id="btn-install" class="btn-icon hidden" title="Instalar app">📲</button>
+        <button id="btn-profile" class="avatar" title="Mi perfil">?</button>
+      </div>
+    </header>
+
+    <!-- Calendario -->
+    <main id="tab-calendario" class="tab">
+      <div class="cal-controls">
+        <button id="cal-prev" class="btn-icon">‹</button>
+        <span id="cal-month"></span>
+        <button id="cal-next" class="btn-icon">›</button>
+        <div class="seg">
+          <button id="seg-comun" class="seg-btn active">Común</button>
+          <button id="seg-mio" class="seg-btn">Mío</button>
+        </div>
+      </div>
+      <div id="cal-grid" class="cal-grid"></div>
+      <div id="cal-day-tasks" class="day-tasks"></div>
+    </main>
+
+    <!-- Tareas -->
+    <main id="tab-tareas" class="tab hidden">
+      <div class="seg seg-wide">
+        <button id="flt-pend" class="seg-btn active">Pendientes</button>
+        <button id="flt-mis" class="seg-btn">Mis tareas</button>
+        <button id="flt-hist" class="seg-btn">Historial</button>
+      </div>
+      <div id="task-list" class="task-list"></div>
+    </main>
+
+    <!-- Nueva tarea -->
+    <main id="tab-nueva" class="tab hidden">
+      <form id="task-form" class="task-form">
+        <h2>Nueva tarea</h2>
+        <input type="text" id="tf-title" placeholder="¿Qué hay que hacer?" required maxlength="80" />
+        <textarea id="tf-desc" placeholder="Detalles (opcional)" maxlength="300"></textarea>
+        <div class="form-row">
+          <select id="tf-assignee"></select>
+          <select id="tf-category"></select>
+        </div>
+        <div class="form-row">
+          <input type="date" id="tf-date" />
+          <select id="tf-priority">
+            <option value="baja">🟡 Prioridad baja</option>
+            <option value="normal" selected>🟠 Prioridad normal</option>
+            <option value="alta">🔴 Prioridad alta</option>
+          </select>
+        </div>
+        <select id="tf-recurrence">
+          <option value="none">Sin repetición</option>
+          <option value="daily">Todos los días</option>
+          <option value="weekdays">Días laborables (L-V)</option>
+          <option value="weekly">Cada semana</option>
+          <option value="monthly">Cada mes</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Asignar tarea</button>
+      </form>
+    </main>
+
+    <!-- Ajustes -->
+    <main id="tab-ajustes" class="tab hidden">
+      <div class="settings">
+        <h2>Ajustes</h2>
+        <button id="btn-push" class="btn btn-outline">🔔 Activar notificaciones</button>
+        <p class="hint">Los avisos push te llegan aunque no tengas la app abierta. Los recordatorios automáticos se envían a las 9:00 y 1 hora antes del vencimiento.</p>
+        <hr />
+        <h3>Familia</h3>
+        <div id="family-list"></div>
+        <hr />
+        <div id="admin-panel" class="hidden"></div>
+        <button id="btn-logout" class="btn btn-danger">Cerrar sesión</button>
+      </div>
+    </main>
+
+    <!-- Menú inferior -->
+    <nav class="tabbar">
+      <button data-tab="calendario" class="tab-btn active">📅<span>Calendario</span></button>
+      <button data-tab="tareas" class="tab-btn">✅<span>Tareas</span></button>
+      <button data-tab="nueva" class="tab-btn">➕<span>Nueva</span></button>
+      <button data-tab="ajustes" class="tab-btn">⚙️<span>Ajustes</span></button>
+    </nav>
+  </section>
+
+  <!-- Modal detalle de tarea -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <button id="modal-close" class="modal-close">×</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
