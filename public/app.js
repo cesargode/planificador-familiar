@@ -187,6 +187,24 @@ function wireEvents() {
     deferredPrompt = null;
     $('btn-install').classList.add('hidden');
   });
+  // Botón de Ajustes: usa el prompt si existe; si no, explica cómo instalar
+  $('btn-install2').addEventListener('click', async () => {
+    const hint = $('install-hint');
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      $('btn-install').classList.add('hidden');
+      hint.classList.add('hidden');
+      return;
+    }
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    hint.textContent = ios
+      ? 'En iPhone/iPad: botón Compartir ↗ en Safari → "Añadir a pantalla de inicio" → Añadir.'
+      : 'En Android: abre esta página con Chrome, pulsa ⋮ (menú) → "Instalar app" o "Añadir a pantalla de inicio". (En el navegador Mi del Xiaomi no existe; usa Chrome.)';
+    hint.classList.remove('hidden');
+  });
 }
 
 function syncSeg(...ids) { ids.forEach((id, i) => $(id).classList.toggle('active', i === 0)); }
