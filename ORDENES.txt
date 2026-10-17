@@ -19,19 +19,19 @@ CÓMO USAR ESTE ARCHIVO
 La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
 
   · App (PWA) en /home/cesar/app-planificador-familiar/public
-  · ★ PUBLICADA (URL ÚNICA QUE USA LA FAMILIA):
-        https://familia-planificador.pages.dev   (Cloudflare Pages)
-      Desplegada la versión con campo "hora" y editar/borrar el 17/10.
-      ⚠ Cada despliegue genera además su propia URL con hash
-      (https://86bd2a2e.…, https://294c26b3.…, …) que queda CONGELADA con
-      esa versión para siempre: NO dar esas URLs a nadie, la familia se
-      quedaría con la app vieja (así ha pasado con 86bd2a2e…).
-      Para redesplegar: dashboard (Workers & Pages → familia-planificador
-      → Deployments → Create deployment → Upload assets → carpeta public/)
-      o desde aquí:  npx wrangler pages deploy public/
-                     --project-name=familia-planificador --branch=main
-      (wrangler ya está logueado; OJO: sin --branch=main crea un PREVIEW,
-      porque la rama local es "master" y la de producción es "main").
+  · ★ PUBLICADA (URL ÚNICA QUE USA LA FAMILIA desde el 17/10 por la tarde):
+        https://cesargode.github.io/planificador-familiar/   (GitHub Pages)
+      Repo: https://github.com/cesargode/planificador-familiar (público)
+      Rama main; cada push a main despliega solo (Actions → deploy-pages.yml).
+      GitHub de César: usuario "cesargode", gh ya logueado en esta PC.
+  · RESERVA (la original): https://familia-planificador.pages.dev
+      Cloudflare Pages, sigue activa y al día, PERO Vodafone (su operador)
+      tiene bloqueado/rto el rango 188.114.96.x de Cloudflare desde donde
+      se sirve pages.dev → desde casa NO carga (timeout). Por eso se pasó
+      a GitHub Pages (github.io responde perfecto por Vodafone).
+      Para redesplegarla si hiciera falta:
+        npx wrangler pages deploy public/ --project-name=familia-planificador --branch=main
+      (wrangler sigue logueado; sin --branch=main crea un PREVIEW).
   · Servidor local (para desarrollar):  python3 serve.py → http://192.168.0.44:8081
   · Backend: Supabase (proyecto qvldxrsloszuuuwojxid), todo desplegado
   · Hay4 cuentas con la misma contraseña "Familia2026":
@@ -72,7 +72,8 @@ La app YA ESTÁ PUBLICADA EN INTERNET CON HTTPS Y EL PUSH FUNCIONA (probado).
 ────────────────────────────────────────────────────────────────────────────
  ACCESOS Y DATOS NECESARIOS
 ────────────────────────────────────────────────────────────────────────────
-  · App PUBLICADA (la que usa la familia): https://familia-planificador.pages.dev
+  · App PUBLICADA (la que usa la familia): https://cesargode.github.io/planificador-familiar/
+  · Reserva (bloqueada por Vodafone):     https://familia-planificador.pages.dev
   · App en local:        http://192.168.0.44:8081   (misma WiFi que la PC)
   · IP Tailscale de la PC: http://100.73.85.125:8081
   · Cloudflare: la cuenta es del usuario (Pages, proyecto "familia-planificador");
@@ -174,10 +175,25 @@ PASO 5 — PRUEBA REAL CON LA FAMILIA   (empezado el 17/10)
   · Confirmar que les llegan los avisos push a todos.
   · Apuntar aquí lo que falle.
 
-PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
-  git init ya está hecho y hay6 commits. Para subirlo a GitHub:
-     gh auth login
-     gh repo create planificador-familiar --private --source=. --push
+PASO 6 — COPIA DE SEGURIDAD EN GITHUB  ✔ HECHO el 17/10/2026
+  Hecho: repo público https://github.com/cesargode/planificador-familiar
+  (usuario cesargode, gh logueado). La rama local pasó de "master" a "main".
+  Subido además el workflow .github/workflows/deploy-pages.yml: cada push a
+  main publica public/ en GitHub Pages → despliegue verificado (HTTP 200).
+
+PASO 7 — CAMBIAR LA FAMILIA A LA URL DE GITHUB  (ahora mismo)
+  · Falta: que César (o aquí con su token de Supabase) añada en
+      Dashboard Supabase → Authentication → URL Configuration:
+        Site URL:      https://cesargode.github.io/planificador-familiar/
+        Redirect URLs: https://cesargode.github.io/planificador-familiar/*
+    (para que el enlace mágico redirija bien; el login con contraseña
+    funciona YA SIN TOCAR NADA, porque la app no depende de la URL).
+  · Cada miembro que abra la URL nueva por primera vez tendrá que volver
+    a pulsar "🔔 Activar notificaciones" en Ajustes (permiso, service
+    worker e icono instalado son de cada origen).
+  · Decir a la familia que usen desde ahora la URL de GitHub; la de
+    Cloudflare queda de reserva por si se les olvida (solo carga fuera
+    de Vodafone o con WARP).
 
 ────────────────────────────────────────────────────────────────────────────
  CÓMO PROBAR SIN MOLESTAR A LA FAMILIA
@@ -291,3 +307,21 @@ PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
 
   AVISO: el servidor local (python3 serve.py) NO se reinicia solo al
   reiniciar la PC. Si la app no abre, arráncalo a mano (comando de arriba).
+
+  17/10/2026 — DIAGNÓSTICO del "no me entra desde el móvil con pages.dev":
+    el sitio estaba bien; Vodafone España (AS12430) no enruta al rango
+    188.114.96.x/97.x de Cloudflare desde donde se sirve pages.dev →
+    timeout a nivel TCP. Prueba: ejemplo.pages.dev (que resuelve a
+    172.66.x) SÍ carga; forzando el hostname contra esa IP con curl
+    --resolve respondía 200 en 0,08s. NO es bloqueo por DNS (todos los
+    resolutores devuelven lo mismo) ni problema del proyecto.
+  17/10/2026 — PASO 6+7: migración a GitHub Pages. Repo cesargode/
+    planificador-familiar, rama main, Actions despliega public/ solo.
+    URL buena: https://cesargode.github.io/planificador-familiar/
+    (verificada HTTP 200 desde la red de Vodafone). Cloudflare queda de
+    RESERVA sin tocar, por si el bloqueo de Vodafone afloja (suele ser
+    más intenso con el fútbol, según el usuario).
+    OJO: la rama local ahora es "main" (antes "master"); wrangler de la
+    reserva acepta --branch=main igual.
+    gh auth: token con scopes gist, read:org, repo, workflow (keyring).
+    Git identidad local: cesargode <gesargode2@gmail.com>.

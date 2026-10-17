@@ -41,8 +41,12 @@ python3 serve.py
 ```
 
 ### 4. Para la familia (hosting gratuito)
-Sube la carpeta `public/` a **Cloudflare Pages** o **Vercel** (gratis) y pasa esa URL.
-Cada miembro entra con su email (le llega un enlace mágico), pone nombre y móvil, y listo.
+- **Producción:** https://cesargode.github.io/planificador-familiar/ (GitHub Pages;
+  cada push a `main` despliega solo con Actions).
+- **Reserva:** https://familia-planificador.pages.dev (Cloudflare Pages; ojo, el
+  rango 188.114.x de Cloudflare da timeout desde Vodafone).
+
+Cada miembro entra con su email y contraseña (o enlace mágico), pone nombre y móvil, y listo.
 El primer día: cada uno se crea su perfil en Ajustes y tú repartes las tareas.
 
 ## Estructura

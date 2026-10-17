@@ -69,19 +69,27 @@
     cambiar contraseña, editar nombre/WhatsApp y borrar miembro.
   - Comprobado: admin crea miembro → le cambia la contraseña → ese miembro
     entra con la contraseña nueva y **no** ve el panel → el admin lo borra.
+- **Migración a GitHub Pages** (17 oct tarde): Vodafone (AS12430) no enruta
+  al rango 188.114.96.x de Cloudflare, así que `pages.dev` daba timeout
+  (el sitio estaba bien; comprobado con `curl --resolve` contra otra IP).
+  Repo público `cesargode/planificador-familiar` (rama `main`), workflow
+  `.github/workflows/deploy-pages.yml` despliega `public/` en cada push.
+  **URL actual: https://cesargode.github.io/planificador-familiar/**
+  (HTTP 200 desde Vodafone). Cloudflare Pages queda de reserva sin tocar.
 
 ## 🌐 Datos de conexión
 - Proyecto Supabase: `qvldxrsloszuuuwojxid` (https://qvldxrsloszuuuwojxid.supabase.co)
 - Clave publicable en `public/config.js`
+- **App publicada (GitHub Pages): https://cesargode.github.io/planificador-familiar/**
+- Reserva (Cloudflare, la bloquea Vodafone): https://familia-planificador.pages.dev
 - PC en la red local: **192.168.0.44** → app en http://192.168.0.44:8081
 - Tailscale de la PC: **100.73.85.125** → http://100.73.85.125:8081
 - Móvil: Redmi Note 14 Pro (Tailscale instalado, pero aparece offline)
 
 ## ⚠️ Bloqueo actual
-Ya no hay bloqueo de red ni de cron. Lo único que **no puedo hacer yo** desde la terminal:
-
-1. **Hosting con HTTPS** → no hay `wrangler`/`vercel` instalados ni login de
-   GitHub/Cloudflare/Vercel. Necesito que el usuario haga login o pegue un token.
+Ninguno operativo. La app está publicada en GitHub Pages y se usa desde
+la URL de arriba. Pasa que Vodafone no enruta a `pages.dev` (ver Hecho),
+por eso se cambió el hosting.
 
 ## 📋 Siguientes pasos (en este orden)
 1. **Probar en el móvil** con la contraseña (ya verificado en E2E desde la PC):
