@@ -1,0 +1,173 @@
+════════════════════════════════════════════════════════════════════════════
+ ORDENES — Planificador Familiar
+ Este archivo es la guía para CONTINUAR EL PROYECTO desde cualquier sesión,
+ usuario o asistente. Léelo entero al empezar y ACTUALÍZALO al terminar.
+════════════════════════════════════════════════════════════════════════════
+
+CÓMO USAR ESTE ARCHIVO
+  1. Lee primero "ESTADO ACTUAL" y "TRABAJO PENDIENTE".
+  2. Ejecuta EL SIGUIENTE PASO PENDIENTE (el primero de la lista).
+  3. Al terminarlo: márcalo como HECHO, añade la fecha, y añade cualquier
+     cosa nueva que hayas aprendido en "NOTAS Y APUNTES".
+  4. Haz commit de git con lo que haya cambiado:  git commit -am "texto"
+  5. Archivos relacionados: PROGRESO.md (historial detallado),
+     README.md (montaje desde cero), supabase/schema.sql (base de datos).
+
+────────────────────────────────────────────────────────────────────────────
+ ESTADO ACTUAL  (última actualización: 15 oct 2026)
+────────────────────────────────────────────────────────────────────────────
+La app YA FUNCIONA y la familia YA PUEDE USARLA en la red local.
+
+  · App (PWA) en /home/cesar/app-planificador-familiar/public
+  · Servidor local:  python3 serve.py   →  http://192.168.0.44:8081
+  · Backend: Supabase (proyecto qvldxrsloszuuuwojxid), todo desplegado
+  · Hay4 cuentas con la misma contraseña "Familia2026":
+        cesargode@gmail.com            (César — ADMIN, con perfil hecho)
+        itmsiagem113@gmail.com         (Isa)
+        saraamortorres3@gmail.com      (Sara)
+        alejandroamortorres@gmail.com  (Alex)
+      Los tres últimos deben rellenar nombre/WhatsApp/color la primera vez.
+  · César (solo él) tiene panel de administración en Ajustes:
+      añadir miembros, cambiarles la contraseña, editar nombre/WhatsApp, borrar.
+  · Recordatorios automáticos ACTIVOS (cron en Supabase, cada minuto).
+  · Avisos push inmediatos al crear/aceptar/rechazar/completar tareas.
+  · Todo lo anterior está probado con navegador automatizado (E2E).
+
+  ⚠ LO QUE NO FUNCIONA TODAVÍA: las notificaciones push en el móvil y la
+    instalación como app ("añadir a pantalla de inicio"), porque el navegador
+    exige HTTPS y la app está servida por IP. Se arregla en el PASO 1.
+
+────────────────────────────────────────────────────────────────────────────
+ ACCESOS Y DATOS NECESARIOS
+────────────────────────────────────────────────────────────────────────────
+  · App en local:        http://192.168.0.44:8081   (misma WiFi que la PC)
+  · IP Tailscale de la PC: http://100.73.85.125:8081
+  · Proyecto Supabase:   qvldxrsloszuuuwojxid
+     URL:      https://qvldxrsloszuuuwojxid.supabase.co
+     Dashboard: https://supabase.com/dashboard/project/qvldxrsloszuuuwojxid
+     Clave publicable: en public/config.js
+  · Para desplegar o tocar la base de datos necesitas un TOKEN:
+     https://supabase.com/dashboard/account/tokens → Generate new token
+     (todos los permisos). Se usa SOLO en la sesión:
+        export SUPABASE_ACCESS_TOKEN=xxxxx
+     NUNCA guardarlo en ficheros ni en git.
+     Con ese token puedes además ejecutar SQL:
+        POST https://api.supabase.com/v1/projects/qvldxrsloszuuuwojxid/database/query
+     y obtener la clave de servicio (service_role) desde:
+        GET https://api.supabase.com/v1/projects/qvldxrsloszuuuwojxid/api-keys
+  · El token que se ha usado NO llega a la configuración de Auth
+    (Authentication → URL Configuration eso lo toca el usuario en el Dashboard).
+
+────────────────────────────────────────────────────────────────────────────
+ TRABAJO PENDIENTE  (en este orden)
+────────────────────────────────────────────────────────────────────────────
+
+PASO 1 — HOSTING CON HTTPS  (el más importante: habilita push e instalar app)
+  Quién: necesita el usuario (credenciales de Cloudflare o Vercel).
+  Pasos:
+    a. Elegir Cloudflare Pages o Vercel (los dos gratuitos).
+    b. Subir la carpeta public/ (es estática; no hay build).
+       · Cloudflare: dashboard → Workers & Pages → Create → Pages →
+         Upload assets → arrastrar public/ → nombre "familia" → Deploy.
+       · Vercel:  npx vercel --prod   dentro de la carpeta del proyecto
+         (o subir public/ desde el dashboard).
+    c. ANOTAR LA URL FINAL (ej. https://familia.pages.dev).
+    d. Decírselo al asistente: hay que añadir esa URL en Supabase
+       Dashboard → Authentication → URL Configuration → Redirect URLs
+       (añadir https://TUURL/*) para que el enlace mágico siga funcionando.
+    e. Probar en el móvil con HTTPS: login, y luego
+       Ajustes → 🔔 Activar notificaciones (debe funcionar sin bloquearse).
+    f. Avisar: al entrar por primera vez, el navegador ofrecerá "Instalar app".
+
+PASO 2 — ARREGLAR AVISOS DE LA APP
+  a. En Ajustes se promete un recordatorio "1 hora antes del vencimiento"
+     que NO existe. Opción A (rápida): quitar esa frase en public/index.html.
+     Opción B: implementarlo en supabase/functions/send-reminders/index.ts
+     (regla nueva "due_soon_1h": tarea con due_time y hoy, avisar1 hora
+     antes; añadir 'due_soon_1h' al check de kind en public... en
+     supabase/schema.sql → tabla reminder_log) y redesplegar la función.
+  b. Mientras tanto, en public/styles.css / index.html revisar textos.
+
+PASO 3 — EDITAR Y BORRAR TAREAS
+  Ahora solo se pueden aceptar/rechazar/marcar hecha. Falta:
+    · Editar tarea (título, descripción, fecha, prioridad, asignado).
+    · Borrar tarea.
+  Cómo: añadir botones en openTaskModal() de public/app.js y usar
+  sb.from('tasks').update(...) / .delete(...) (ya permitido por RLS).
+  Probar con el navegador automatizado (ver "CÓMO PROBAR" más abajo).
+
+PASO 4 — CATEGORÍAS A MEDIDA
+  Solo hay las6 del schema (Casa, Compras, Escuela, Salud, Mascotas, Otro).
+  Si la familia quiere más: INSERTAR en public.categories desde el SQL Editor
+  o desde el panel de admin (habría que ampliar manage-users).
+
+PASO 5 — PRUEBA REAL CON LA FAMILIA
+  · Que Isa, Sara y Alex entren y completen su perfil.
+  · Que creen y acepten tareas entre ellos.
+  · Confirmar que llegan los avisos push (tras el PASO 1).
+  · Apuntar aquí lo que falle.
+
+PASO 6 (OPCIONAL) — COPIA DE SEGURIDAD EN GITHUB
+  git init ya está hecho y hay1 commit. Para subirlo a GitHub:
+     gh auth login
+     gh repo create planificador-familiar --private --source=. --push
+
+────────────────────────────────────────────────────────────────────────────
+ CÓMO PROBAR SIN MOLESTAR A LA FAMILIA
+────────────────────────────────────────────────────────────────────────────
+  Puedes usar un navegador automatizado (Firefox headless) contra
+  http://192.168.0.44:8081 con un usuario temporal:
+    · Crear/borrar usuarios con la service_role key:
+        POST/DELETE https://qvldxrsloszuuuwojxid.supabase.co/auth/v1/admin/users
+    · Automatizar el navegador: /snap/bin/geckodriver --port 4445
+      (y hablarle por la API WebDriver con Python, sin dependencias).
+    · BORRAR SIEMPRE el usuario de prueba al terminar.
+
+────────────────────────────────────────────────────────────────────────────
+ COMANDOS ÚTILES
+────────────────────────────────────────────────────────────────────────────
+  # Arrancar la app en local (con no-cache, obligatorio para la PWA)
+  cd /home/cesar/app-planificador-familiar && python3 serve.py
+
+  # ¿Sigue corriendo?
+  pgrep -af serve.py; curl -sm 3 -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8081/
+
+  # Redesplegar las Edge Functions (necesita el token en la sesión)
+  cd /home/cesar/app-planificador-familiar
+  supabase link --project-ref qvldxrsloszuuuwojxid
+  supabase functions deploy notify-task send-reminders manage-users
+
+  # Probar una función sin desplegar
+  K=$(grep -oP "SUPABASE_KEY: '\K[^']+" public/config.js)
+  curl -s -X POST https://qvldxrsloszuuuwojxid.supabase.co/functions/v1/send-reminders \
+    -H "apikey: $K" -H "Authorization: Bearer $K"
+
+  # Ver el cron de recordatorios (ya está activo)
+  # (por SQL, con el token de gestión)
+  #   select * from cron.job;
+  #   select * from cron.job_run_details order by start_time desc limit 5;
+  #   para quitarlo: select cron.unschedule('send-reminders');
+
+  # Guardar el trabajo
+  git add -A && git commit -m "lo que hayas hecho"
+
+────────────────────────────────────────────────────────────────────────────
+ NOTAS Y APUNTES  (añadir aquí lo nuevo, con fecha)
+────────────────────────────────────────────────────────────────────────────
+ 15/10/2026 — Se cerró notify-task: ya no acepta la clave pública, exige el
+   JWT de la sesión del usuario (evita que cualquiera mande avisos).
+ 15/10/2026 — Cron de recordatorios montado con pg_cron + pg_net (no hace
+   falta tocar el Dashboard). Job "send-reminders" cada minuto.
+ 15/10/2026 — Service Worker cambiado a "red primero, caché de respaldo"
+   (antes los móviles se quedaban con versiones viejas). Servidor serve.py
+   manda Cache-Control: no-cache para que la app se actualice sola.
+ 15/10/2026 — Login con contraseña (antes solo enlace mágico, que se rompía
+   por la Site URL de Supabase).
+ 15/10/2026 — Panel de administración para César (Edge Function manage-users
+   + columna profiles.is_admin + trigger que impide que un cliente se asigne
+   admin o cambie el email).
+ 15/10/2026 — git init y primer commit. Quitada la clave privada VAPID del
+   README (está en los secretos de Supabase).
+
+  AVISO: el servidor local (python3 serve.py) NO se reinicia solo al
+  reiniciar la PC. Si la app no abre, arráncalo a mano (comando de arriba).

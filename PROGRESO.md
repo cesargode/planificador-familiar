@@ -1,6 +1,8 @@
 # 📌 Planificador Familiar — Estado y siguientes pasos
 
-> Última actualización: **15 oct 2026**. Leer esto al empezar una sesión nueva para continuar donde dejamos.
+> Última actualización: **15 oct 2026**.
+> **El fichero que manda para continuar es `ORDENES.txt`** (qué hacer ahora,
+> accesos y comandos). Este PROGRESO es el historial de lo ya hecho.
 
 ## ✅ Hecho
 - PWA completa en `public/` (login mágico Supabase, onboarding con nombre/móvil/color,
