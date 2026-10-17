@@ -96,6 +96,41 @@ create policy "profiles_insert" on public.profiles
 create policy "profiles_update" on public.profiles
   for update to authenticated using (true);
 
+-- Trigger: el cliente no puede tocarse is_admin ni email;
+-- el email se copia de auth.users. SECURITY DEFINER para poder leer
+-- auth.users (authenticated no tiene SELECT ahí; sin esto el onboarding
+-- falla con "permission denied for table users").
+create or replace function public.protect_is_admin()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  jwt_role text := coalesce(
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role',
+    current_user
+  );
+begin
+  if jwt_role is distinct from 'service_role' then
+    if (tg_op = 'INSERT' and new.is_admin)
+       or (tg_op = 'UPDATE' and new.is_admin is distinct from old.is_admin) then
+      raise exception 'Solo el sistema puede cambiar el rol de administrador';
+    end if;
+    if tg_op = 'INSERT' then
+      select email into new.email from auth.users where id = new.id;
+    elsif tg_op = 'UPDATE' then
+      new.email := old.email;
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists profiles_protect_is_admin on public.profiles;
+create trigger profiles_protect_is_admin
+  before insert or update on public.profiles
+  for each row execute function public.protect_is_admin();
+
 create policy "categories_all" on public.categories
   for all to authenticated using (true) with check (true);
 

@@ -335,3 +335,13 @@ PASO 7 — CAMBIAR LA FAMILIA A LA URL DE GITHUB  (ahora mismo)
     ⚠ Quien ya haya instalado el icono con la versión vieja: borrar el
     acceso directo/app del móvil y volver a "Instalar app" desde
     https://cesargode.github.io/planificador-familiar/
+  17/10/2026 — FIX onboarding: "error al guardar el perfil: permission
+    denied for table users". El trigger protect_is_admin() hacía
+    `select email from auth.users` con SECURITY INVOKER y el rol
+    authenticated no tiene SELECT en auth.users (solo postgres). Arreglado:
+    la función ahora es SECURITY DEFINER (search_path=public) y comprueba
+    el rol del JWT (request.jwt.claims->>'role') en vez de current_user
+    (que con SECURITY DEFINER sería siempre el dueño). Verificado E2E con
+    usuario temporal: INSERT en profiles OK, email auto-rellenado,
+    intento de poner is_admin=true → 400 "Solo el sistema...", usuario
+    de prueba borrado. Copia del SQL en supabase/schema.sql.
