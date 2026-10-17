@@ -13,7 +13,8 @@ const state = {
   tasks: [],
   tab: 'calendario',
   calView: 'comun',       // comun | mio
-  calDate: new Date(),    // mes mostrado
+  calMode: 'mes',         // mes | semana
+  calDate: new Date(),    // mes/semana mostrado
   calSelected: null,      // día seleccionado (ISO yyyy-mm-dd)
   filter: 'pend'          // pend | mis | hist
 };
@@ -152,10 +153,20 @@ function wireEvents() {
   document.querySelectorAll('.tab-btn').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
   // Calendario
-  $('cal-prev').addEventListener('click', () => { state.calDate.setMonth(state.calDate.getMonth() - 1); renderCalendar(); });
-  $('cal-next').addEventListener('click', () => { state.calDate.setMonth(state.calDate.getMonth() + 1); renderCalendar(); });
+  $('cal-prev').addEventListener('click', () => {
+    if (state.calMode === 'semana') state.calDate.setDate(state.calDate.getDate() - 7);
+    else state.calDate.setMonth(state.calDate.getMonth() - 1);
+    renderCalendar();
+  });
+  $('cal-next').addEventListener('click', () => {
+    if (state.calMode === 'semana') state.calDate.setDate(state.calDate.getDate() + 7);
+    else state.calDate.setMonth(state.calDate.getMonth() + 1);
+    renderCalendar();
+  });
   $('seg-comun').addEventListener('click', () => { state.calView = 'comun'; syncSeg('seg-comun', 'seg-mio'); renderCalendar(); });
   $('seg-mio').addEventListener('click', () => { state.calView = 'mio'; syncSeg('seg-mio', 'seg-comun'); renderCalendar(); });
+  $('seg-mes').addEventListener('click', () => { state.calMode = 'mes'; syncSeg('seg-mes', 'seg-semana'); renderCalendar(); });
+  $('seg-semana').addEventListener('click', () => { state.calMode = 'semana'; syncSeg('seg-semana', 'seg-mes'); renderCalendar(); });
 
   // Filtros tareas
   $('flt-pend').addEventListener('click', () => { state.filter = 'pend'; syncSeg('flt-pend', 'flt-mis', 'flt-hist'); renderTaskList(); });
@@ -271,10 +282,30 @@ function tasksForCalendar() {
   return list;
 }
 
+function calByDate() {
+  const byDate = {};
+  tasksForCalendar().forEach((t) => { (byDate[t.due_date] = byDate[t.due_date] || []).push(t); });
+  return byDate;
+}
+
+function weekStart(d) {
+  const x = new Date(d);
+  x.setHours(12, 0, 0, 0);
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); // lunes
+  return x;
+}
+
 function renderCalendar() {
+  const byDate = calByDate();
+  if (state.calMode === 'semana') renderWeek(byDate);
+  else renderMonth(byDate);
+}
+
+function renderMonth(byDate) {
   const y = state.calDate.getFullYear(), m = state.calDate.getMonth();
   $('cal-month').textContent = state.calDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
   const grid = $('cal-grid');
+  grid.className = 'cal-grid';
   grid.innerHTML = '';
   ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach((d) => grid.appendChild(el('div', 'cal-head', d)));
 
@@ -282,9 +313,6 @@ function renderCalendar() {
   const startOffset = (first.getDay() + 6) % 7; // lunes=0
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const today = todayISO();
-  const monthTasks = tasksForCalendar();
-  const byDate = {};
-  monthTasks.forEach((t) => { (byDate[t.due_date] = byDate[t.due_date] || []).push(t); });
 
   for (let i = 0; i < startOffset; i++) grid.appendChild(el('div', 'cal-cell empty'));
   for (let d = 1; d <= daysInMonth; d++) {
@@ -301,6 +329,49 @@ function renderCalendar() {
       });
       cell.appendChild(dots);
     }
+    cell.onclick = () => { state.calSelected = iso; renderCalendar(); };
+    grid.appendChild(cell);
+  }
+  renderDayTasks(byDate);
+}
+
+function renderWeek(byDate) {
+  const ws = weekStart(state.calDate);
+  const we = new Date(ws); we.setDate(we.getDate() + 6);
+  const sameMonth = ws.getMonth() === we.getMonth();
+  const fmtDay = (d) => d.getDate();
+  $('cal-month').textContent = sameMonth
+    ? `${fmtDay(ws)} – ${fmtDay(we)} de ${ws.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`
+    : `${fmtDay(ws)} ${ws.toLocaleDateString('es-ES', { month: 'short' })} – ${fmtDay(we)} ${we.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}`;
+
+  const grid = $('cal-grid');
+  grid.className = 'cal-grid week';
+  grid.innerHTML = '';
+  ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].forEach((d) => grid.appendChild(el('div', 'cal-head', d)));
+
+  const today = todayISO();
+  const toISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  // si el día seleccionado no está en esta semana, selecciona hoy (o el lunes)
+  const selISO = state.calSelected;
+  const inWeek = [...Array(7)].some((_, i) => { const d = new Date(ws); d.setDate(d.getDate() + i); return toISO(d) === selISO; });
+  if (!inWeek) {
+    const wsISO = toISO(ws);
+    state.calSelected = (today >= wsISO && today <= toISO(we)) ? today : wsISO;
+  }
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(d.getDate() + i);
+    const iso = toISO(d);
+    const cell = el('div', 'cal-cell week-cell' + (iso === today ? ' today' : '') + (iso === state.calSelected ? ' sel' : ''));
+    cell.innerHTML = `<span class="cal-daynum">${d.getDate()}</span>`;
+    (byDate[iso] || []).slice(0, 3).forEach((t) => {
+      const chip = el('div', 'cal-chip');
+      chip.innerHTML = `<span class="dot" style="background:${prioColor(t.priority)}"></span>${esc(t.title)}`;
+      cell.appendChild(chip);
+    });
+    const more = (byDate[iso] || []).length - 3;
+    if (more > 0) cell.appendChild(el('div', 'cal-more', `+${more}`));
     cell.onclick = () => { state.calSelected = iso; renderCalendar(); };
     grid.appendChild(cell);
   }

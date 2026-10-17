@@ -1,5 +1,5 @@
 /* Service Worker: notificaciones push + caché de respaldo (red primero) */
-const CACHE = 'familia-v5';
+const CACHE = 'familia-v6';
 const ASSETS = ['./', './index.html', './app.js', './styles.css', './config.js', './manifest.webmanifest', './icon.svg', './icon-192.png'];
 const ICON = new URL('./icon-192.png', self.registration.scope).href;
 const appUrl = (u) => {

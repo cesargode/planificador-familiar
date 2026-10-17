@@ -152,10 +152,9 @@ create policy "reminder_log_all" on public.reminder_log
 --  categorías iniciales
 -- ------------------------------------------------------------
 insert into public.categories (name, icon, color) values
-  ('Casa',     '🏠', '#27ae60'),
-  ('Compras',  '🛒', '#e67e22'),
-  ('Escuela',  '📚', '#2980b9'),
-  ('Salud',    '💊', '#c0392b'),
-  ('Mascotas', '🐾', '#8e44ad'),
-  ('Otro',     '📌', '#7f8c8d')
+  ('Casa',       '🏠', '#27ae60'),
+  ('Habitación', '🛏️', '#8b5cf6'),
+  ('Baños',      '🚿', '#0ea5e9'),
+  ('Comedor',    '🍽️', '#f59e0b'),
+  ('Cocina',     '🍳', '#ef4444')
 on conflict (name) do nothing;
